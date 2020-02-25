@@ -1,8 +1,109 @@
 
 (function() {
 
-	var $path = {};
+	///
+	///
+	///
+	function collisionhgrid(width, slices) {
+		var thishgrid = new Array();
+		thishgrid.idcount = 0;
+		thishgrid.width = width;
+		thishgrid.slices = slices;
+		for (var i = 0; i < thishgrid.slices; ++i) {
+			thishgrid[i] = {};
+		}
 
+		thishgrid.add = function(object) {
+			var gridspriteid = "c" + (++thishgrid.idcount);
+			var x = object && object.x;
+			if ((x >= 0) && (x < thishgrid.width)) {
+				var ii = Math.floor(x * thishgrid.slices / thishgrid.width);
+				thishgrid[ii][gridspriteid] = object;
+			}
+			return gridspriteid;
+		}
+
+		thishgrid.move = function(object, gridspriteid) {
+			var count = 0;
+			var x = object && object.x;
+			if ((x >= 0) && (x < thishgrid.width)) {
+				var ii = Math.floor(x * thishgrid.slices / thishgrid.width);
+				for (var iii = 0; iii < thishgrid.slices; ++iii) {
+					if (ii == iii) {
+						if (gridspriteid in thishgrid[iii]) {
+							thishgrid[iii][gridspriteid] = object;
+						} else {
+							thishgrid[iii][gridspriteid] = object;
+							++count;
+						}
+					} else {
+						if (gridspriteid in thishgrid[iii]) {
+							delete thishgrid[iii][gridspriteid];
+							--count;
+						}
+					}
+				}
+			}
+			return count;
+		}
+		thishgrid.check2 = function(sprite, gridsprite, delta_x, delta_y) {
+			if (gridsprite.visible) {
+				if (Math.abs(sprite.x - gridsprite.x) < delta_x) {
+					if (Math.abs(sprite.y - gridsprite.y) < delta_y) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		thishgrid.check = function(sprite, delta_x, delta_y, cb) {
+			var sliceid = thishgrid.getindex(sprite.x);
+			if (sliceid - 1 >= 0) {
+				for (var gridspriteid in thishgrid[sliceid - 1]) {
+					if (thishgrid.check2(sprite, thishgrid[sliceid - 1][gridspriteid], delta_x, delta_y)) {
+						if (typeof cb == "function") cb(sprite, thishgrid[sliceid - 1][gridspriteid]);
+						return thishgrid[sliceid - 1][gridspriteid];
+					}
+				}
+			}
+			for (var gridspriteid in thishgrid[sliceid]) {
+				if (thishgrid.check2(sprite, thishgrid[sliceid][gridspriteid], delta_x, delta_y)) {
+					if (typeof cb == "function") cb(sprite, thishgrid[sliceid][gridspriteid]);
+					return thishgrid[sliceid][gridspriteid];
+				}
+			}
+			if (sliceid + 1 < thishgrid.slices) {
+				for (var gridspriteid in thishgrid[sliceid + 1]) {
+					if (thishgrid.check2(sprite, thishgrid[sliceid + 1][gridspriteid], delta_x, delta_y)) {
+						if (typeof cb == "function") cb(sprite, thishgrid[sliceid + 1][gridspriteid]);
+						return thishgrid[sliceid + 1][gridspriteid];
+					}
+				}
+			}
+			return null;
+		}
+		thishgrid.purge = function(object, gridspriteid) {
+			var count = 0;
+			for (var iii = 0; iii < thishgrid.slices; ++iii) {
+				if (gridspriteid in thishgrid[iii]) {
+					delete thishgrid[iii][gridspriteid];
+				}
+			}
+			return count;
+		}
+
+		thishgrid.getindex = function(x) {
+			if ((x >= 0) && (x < thishgrid.width)) {
+				var ii = Math.floor(x * thishgrid.slices / thishgrid.width);
+				return ii;
+			}
+		}
+
+		return thishgrid;
+	}
+
+	
+	
 	///
 	///
 	///
@@ -153,8 +254,10 @@
 		this_spline.recalculate();
 		return this_spline;
 	}
-	$path.spline = spline;
 
+	var $path = {};
+	$path.collisionhgrid = collisionhgrid;
+	$path.spline = spline;
 	window.$path = $path;
 })();
 
