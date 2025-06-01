@@ -1,9 +1,12 @@
+/// path.js: a library for record, analyze, extract and generate patterns from paths
+/// @author info@iagoFG.com
+/// @license MPL-2.0
 
 (function() {
 
-	///
-	///
-	///
+	//
+	//
+	//
 	function collisionhgrid(width, slices) {
 		var thishgrid = new Array();
 		thishgrid.idcount = 0;
@@ -101,8 +104,6 @@
 
 		return thishgrid;
 	}
-
-	
 	
 	///
 	///
